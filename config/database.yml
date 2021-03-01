@@ -1,13 +1,21 @@
-development:
+default: &default
   adapter: postgresql
-  database: starter_project_dev
-  host: localhost
+  encoding: unicode
+  # For details on connection pooling, see Rails configuration guide
+  # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  timeout: 5000
+
+development:
+  <<: *default
+  database: expert_advice_project_dev
 
 test:
-  adapter: postgresql
-  database: starter_project_test
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: localhost
+  <<: *default
+  database: expert_advice_project_test
   min_messages: WARNING
+
+production:
+  <<: *default
+  database: expert_advice_production
+  username: expert_advice
+  password: <%= ENV['EXPERT_ADVICE_DATABASE_PASSWORD'] %>
