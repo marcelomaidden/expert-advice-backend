@@ -32,7 +32,17 @@ module Api
                              status: :unprocessable_entity,
                              serializer: ActiveModel::Serializer::ErrorSerializer
         end
+
         tags = question_params[:tags].split(',')
+
+        if !tags.blank?
+          tags.each do |tag|
+            name=tag.strip.downcase.capitalize
+            t = Tag.find_by(name: name)
+            t = Tag.create(name: name) unless  t
+            TagQuestion.create(question_id: question.id, tag_id: t.id)
+          end
+        end
       end
 
       private
