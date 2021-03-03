@@ -1,6 +1,8 @@
 module Api
   module V1
     class QuestionsController < ApplicationController
+      before_action :doorkeeper_authorize!, only: [:create, :update]
+
       def index
         questions=Question.order(:created_at)
 
@@ -15,6 +17,17 @@ module Api
         rescue
           render json: {error: "Question not found"}
         
+      end
+
+      def create
+
+      end
+
+      private
+
+      def question_params
+        puts params
+        params.require(:question).permit(:title, :description, :user_id, :tags)
       end
     end
   end
