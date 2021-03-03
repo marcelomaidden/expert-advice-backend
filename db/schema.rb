@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_03_02_153440) do
+ActiveRecord::Schema.define(version: 2021_03_03_220957) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -70,12 +70,19 @@ ActiveRecord::Schema.define(version: 2021_03_02_153440) do
     t.index ["user_id"], name: "index_questions_on_user_id"
   end
 
-  create_table "tags", force: :cascade do |t|
-    t.string "name"
+  create_table "tag_questions", force: :cascade do |t|
     t.bigint "question_id", null: false
+    t.bigint "tag_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["question_id"], name: "index_tags_on_question_id"
+    t.index ["question_id"], name: "index_tag_questions_on_question_id"
+    t.index ["tag_id"], name: "index_tag_questions_on_tag_id"
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "user_account_accesses", force: :cascade do |t|
@@ -100,7 +107,8 @@ ActiveRecord::Schema.define(version: 2021_03_02_153440) do
   add_foreign_key "oauth_access_grants", "users", column: "resource_owner_id"
   add_foreign_key "oauth_access_tokens", "oauth_applications", column: "application_id"
   add_foreign_key "questions", "users"
-  add_foreign_key "tags", "questions"
+  add_foreign_key "tag_questions", "questions"
+  add_foreign_key "tag_questions", "tags"
   add_foreign_key "user_account_accesses", "accounts"
   add_foreign_key "user_account_accesses", "users"
 end

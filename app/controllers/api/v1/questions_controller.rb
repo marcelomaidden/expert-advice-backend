@@ -20,14 +20,25 @@ module Api
       end
 
       def create
+        question = Question.new
+        question.title = question_params[:title]
+        question.description = question_params[:description]
+        question.user_id = question_params[:user]
 
+        if question.save
+          render json: question
+        else
+          render json: question,
+                             status: :unprocessable_entity,
+                             serializer: ActiveModel::Serializer::ErrorSerializer
+        end
+        tags = question_params[:tags].split(',')
       end
 
       private
 
       def question_params
-        puts params
-        params.require(:question).permit(:title, :description, :user_id, :tags)
+        params.require(:data).require(:attributes).permit(:title, :description, :user, :tags)
       end
     end
   end
