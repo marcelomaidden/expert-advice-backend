@@ -2,6 +2,7 @@ module Api
   module V1
     class QuestionsController < ApplicationController
       before_action :doorkeeper_authorize!, only: [:create, :update]
+      before_action :set_question, only: [:show, :update, :destroy]
 
       def index
         questions=Question.order(:created_at)
@@ -10,9 +11,7 @@ module Api
       end
 
       def show
-        question = Question.find(params[:id])
-
-        render json: question, status: :ok
+        render json: @question, status: :ok
         
         rescue
           render json: {error: "Question not found"}
@@ -45,22 +44,33 @@ module Api
         end
       end
 
-      def update
-        question = Question.find(params[:id])
-        question.title = question_params[:title]
-        question.description = question_params[:description]
-
-        if question.save
-          render json: question
+      def destroy
+        tagQuestion = TagQuestion.where(question_id: @question.id)
+        tagQuestion.delete_all
+        if @question.delete
+          render json: @question
         else
-          render json: question,
+          render json: @question,
+                             status: :unprocessable_entity,
+                             serializer: ActiveModel::Serializer::ErrorSerializer
+        end
+      end
+
+      def update
+        @question.title = question_params[:title]
+        @question.description = question_params[:description]
+
+        if @question.save
+          render json: @question
+        else
+          render json: @question,
                              status: :unprocessable_entity,
                              serializer: ActiveModel::Serializer::ErrorSerializer
         end
 
         tags = question_params[:tags].split(',')
 
-        tagQuestion = TagQuestion.where(question_id: question.id)
+        tagQuestion = TagQuestion.where(question_id: @question.id)
         tagQuestion.delete_all
 
         if !tags.blank?
@@ -68,7 +78,7 @@ module Api
             name=tag.strip.downcase.capitalize
             t = Tag.find_by(name: name)
             t = Tag.create(name: name) unless  t
-            TagQuestion.create(question_id: question.id, tag_id: t.id)
+            TagQuestion.create(question_id: @question.id, tag_id: t.id)
           end
         end
       end
@@ -77,6 +87,10 @@ module Api
 
       def question_params
         params.require(:data).require(:attributes).permit(:title, :description, :user, :tags)
+      end
+
+      def set_question
+        @question = Question.find(params[:id])
       end
     end
   end
