@@ -3,6 +3,7 @@ module Api
     class QuestionsController < ApplicationController
       before_action :doorkeeper_authorize!, only: [:create, :update]
       before_action :set_question, only: [:show, :update, :destroy]
+      before_action :check_user, only: [:update, :destroy]
 
       def index
         questions=Question.order(:created_at)
@@ -91,6 +92,12 @@ module Api
 
       def set_question
         @question = Question.find(params[:id])
+      end
+
+      def check_user
+        render json: @question,
+        status: :unprocessable_entity,
+        serializer: ActiveModel::Serializer::ErrorSerializer unless @question.user.id == question_params[:user]
       end
     end
   end
