@@ -95,9 +95,11 @@ module Api
       end
 
       def check_user
+        user = nil
+        user ||= User.find(doorkeeper_token[:resource_owner_id]) if doorkeeper_token
         render json: @question,
         status: :unprocessable_entity,
-        serializer: ActiveModel::Serializer::ErrorSerializer unless @question.user.id == question_params[:user]
+        serializer: ActiveModel::Serializer::ErrorSerializer unless @question.user.id == user.id
       end
     end
   end

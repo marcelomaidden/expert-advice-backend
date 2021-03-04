@@ -3,11 +3,11 @@ module Api
     class UsersController < Api::V1::ApiController
       before_action :doorkeeper_authorize!, except: :create
 
-       def me
+      def me
         render json: current_user, account_user: current_account_user
       end
 
-       def create
+      def create
         user = User.new(user_params)
         account = user.accounts.build
         account_user = AccountUser.new(user: user, account: account)
@@ -16,8 +16,8 @@ module Api
           render json: user, account_user: account_user
         else
           render json: user, account_user: account_user,
-                             status: :unprocessable_entity,
-                             serializer: ActiveModel::Serializer::ErrorSerializer
+          status: :unprocessable_entity,
+          serializer: ActiveModel::Serializer::ErrorSerializer
         end
       end
 
