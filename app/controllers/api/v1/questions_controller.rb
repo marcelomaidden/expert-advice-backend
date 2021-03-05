@@ -1,14 +1,20 @@
 module Api
   module V1
     class QuestionsController < ApplicationController
+      WillPaginate.per_page=5
       before_action :doorkeeper_authorize!, only: [:create, :update]
       before_action :set_question, only: [:show, :update, :destroy]
       before_action :check_user, only: [:update, :destroy]
 
       def index
-        questions=Question.order(:created_at)
+        if params[:page]
+          questions=Question.paginate(page: params[:page]).order(:created_at)
+        else
+          questions=Question.order(:created_at)
+        end
 
-        paginate json: questions, per_page: 4
+        #paginate json: questions, meta: pagination_meta(questions)
+        paginate json: questions
       end
 
       def show
@@ -85,9 +91,18 @@ module Api
       end
 
       private
-
+      # def pagination_meta(object)
+      #   {
+      #     current_page: object.current_page,
+      #     next_page: object.next_page,
+      #     prev_page: object.previous_page,
+      #     total_pages: object.total_pages,
+      #     total_count: object.total_entries,
+      #     per_page: object.per_page
+      #   }
+      # end
       def question_params
-        params.require(:data).require(:attributes).permit(:title, :description, :user, :tags)
+        params.require(:data).require(:attributes).permit(:title, :description, :user, :tags, :answers, :pages)
       end
 
       def set_question
