@@ -1,20 +1,25 @@
 module Api
   module V1
     class QuestionsController < ApplicationController
-      WillPaginate.per_page=5
+      WillPaginate.per_page = 5
       before_action :doorkeeper_authorize!, only: [:create, :update]
       before_action :set_question, only: [:show, :update, :destroy]
       before_action :check_user, only: [:update, :destroy]
 
       def index
         if params[:page]
-          questions=Question.paginate(page: params[:page])
-          if params[:user]
-            questions=questions.where(user_id: params[:user])
+          if params[:tag]
+            questions = Tag.find(params[:tag])
+            questions = questions.questions.paginate(page: params[:page])
+          else
+            questions = Question.paginate(page: params[:page])
           end
-          questions=questions.order(:created_at)
+          if params[:user]
+            questions = questions.where(user_id: params[:user])
+          end
+          questions = questions.order(:created_at)
         else
-          questions=Question.order(:created_at)
+          questions = Question.order(:created_at)
         end
 
         paginate json: questions
@@ -22,10 +27,8 @@ module Api
 
       def show
         render json: @question, status: :ok
-        
-        rescue
-          render json: {error: "Question not found"}
-        
+      rescue
+        render json: { error: "Question not found" }
       end
 
       def create
@@ -38,17 +41,17 @@ module Api
           render json: question
         else
           render json: question,
-                             status: :unprocessable_entity,
-                             serializer: ActiveModel::Serializer::ErrorSerializer
+                 status: :unprocessable_entity,
+                 serializer: ActiveModel::Serializer::ErrorSerializer
         end
 
         tags = question_params[:tags].split(',')
 
         if !tags.blank?
           tags.each do |tag|
-            name=tag.strip.downcase.capitalize
+            name = tag.strip.downcase.capitalize
             t = Tag.find_by(name: name)
-            t = Tag.create(name: name) unless  t
+            t = Tag.create(name: name) unless t
             TagQuestion.create(question_id: question.id, tag_id: t.id)
           end
         end
@@ -63,8 +66,8 @@ module Api
           render json: @question
         else
           render json: @question,
-                             status: :unprocessable_entity,
-                             serializer: ActiveModel::Serializer::ErrorSerializer
+                 status: :unprocessable_entity,
+                 serializer: ActiveModel::Serializer::ErrorSerializer
         end
       end
 
@@ -76,8 +79,8 @@ module Api
           render json: @question
         else
           render json: @question,
-                             status: :unprocessable_entity,
-                             serializer: ActiveModel::Serializer::ErrorSerializer
+                 status: :unprocessable_entity,
+                 serializer: ActiveModel::Serializer::ErrorSerializer
         end
 
         tags = question_params[:tags].split(',')
@@ -87,15 +90,16 @@ module Api
 
         if !tags.blank?
           tags.each do |tag|
-            name=tag.strip.downcase.capitalize
+            name = tag.strip.downcase.capitalize
             t = Tag.find_by(name: name)
-            t = Tag.create(name: name) unless  t
+            t = Tag.create(name: name) unless t
             TagQuestion.create(question_id: @question.id, tag_id: t.id)
           end
         end
       end
 
       private
+
       def question_params
         params[:data][:attributes].delete('answers')
         params.require(:data).require(:attributes).permit(:title, :description, :tags, :pages, :user)
@@ -109,8 +113,8 @@ module Api
         user = nil
         user ||= User.find(doorkeeper_token[:resource_owner_id]) if doorkeeper_token
         render json: @question,
-        status: :unprocessable_entity,
-        serializer: ActiveModel::Serializer::ErrorSerializer unless @question.user.id == user.id
+               status: :unprocessable_entity,
+               serializer: ActiveModel::Serializer::ErrorSerializer unless @question.user.id == user.id
       end
     end
   end

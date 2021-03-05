@@ -4,20 +4,20 @@ module Api
       before_action :doorkeeper_authorize!, only: [:create, :update]
 
       def index
-        answers=Answer.order(:created_at)
+        answers = Answer.order(:created_at)
 
         render json: answers
       end
 
       def show
-        answers=Answer.where(question_id: params[:id])
-        question=Question.find(params[:id])
+        answers = Answer.where(question_id: params[:id])
+        question = Question.find(params[:id])
 
         render json: answers, question: question
       end
 
       def create
-        answer=Answer.new
+        answer = Answer.new
         answer.body = answer_params[:body]
         answer.user_id = answer_params[:user]
         answer.question_id = answer_params[:question]
@@ -26,7 +26,7 @@ module Api
           render json: answer, status: :ok
         else
           render json: answer, status: :unprocessable_entity,
-          serializer: ActiveModel::Serializer::ErrorSerializer
+                 serializer: ActiveModel::Serializer::ErrorSerializer
         end
       end
 

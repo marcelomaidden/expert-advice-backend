@@ -27,7 +27,7 @@ Bundler/OrderedGems:
 # SupportedHashRocketStyles: key, separator, table
 # SupportedColonStyles: key, separator, table
 # SupportedLastArgumentHashStyles: always_inspect, always_ignore, ignore_implicit, ignore_explicit
-Layout/AlignHash:
+Layout/HashAlignment:
   Exclude:
     - 'app/controllers/api/v1/users_controller.rb'
 
@@ -162,7 +162,7 @@ Style/StringLiterals:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Style/UnneededCapitalW:
+Style/RedundantCapitalW:
   Exclude:
     - 'config/initializers/mime_types.rb'
 

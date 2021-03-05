@@ -6,9 +6,6 @@ Style/FrozenStringLiteralComment:
 Naming/VariableNumber:
   Enabled: false
 
-Performance/FixedSize:
-  Enabled: false
-
 Lint/AmbiguousBlockAssociation:
   Enabled: false
 
