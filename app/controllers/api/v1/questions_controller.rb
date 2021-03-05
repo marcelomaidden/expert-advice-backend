@@ -1,10 +1,11 @@
 module Api
   module V1
+    # QuestionsController is used on CRUD operations on questions and returns a json response
     class QuestionsController < ApplicationController
       WillPaginate.per_page = 5
-      before_action :doorkeeper_authorize!, only: [:create, :update]
-      before_action :set_question, only: [:show, :update, :destroy]
-      before_action :check_user, only: [:update, :destroy]
+      before_action :doorkeeper_authorize!, only: %i[create update]
+      before_action :set_question, only: %i[show update destroy]
+      before_action :check_user, only: %i[update destroy]
 
       def index
         if params[:page]
@@ -14,9 +15,7 @@ module Api
           else
             questions = Question.paginate(page: params[:page])
           end
-          if params[:user]
-            questions = questions.where(user_id: params[:user])
-          end
+          questions = questions.where(user_id: params[:user]) if params[:user]
           questions = questions.order(:created_at)
         else
           questions = Question.order(:created_at)
@@ -27,8 +26,8 @@ module Api
 
       def show
         render json: @question, status: :ok
-      rescue
-        render json: { error: "Question not found" }
+      rescue StandardError
+        render json: { error: 'Question not found' }
       end
 
       def create
@@ -47,19 +46,17 @@ module Api
 
         tags = question_params[:tags].split(',')
 
-        if !tags.blank?
-          tags.each do |tag|
-            name = tag.strip.downcase.capitalize
-            t = Tag.find_by(name: name)
-            t = Tag.create(name: name) unless t
-            TagQuestion.create(question_id: question.id, tag_id: t.id)
-          end
-        end
+        tags.each do |tag|
+          name = tag.strip.downcase.capitalize
+          t = Tag.find_by(name: name)
+          t ||= Tag.create(name: name)
+          TagQuestion.create(question_id: question.id, tag_id: t.id)
+        end unless tags.blank?
       end
 
       def destroy
-        tagQuestion = TagQuestion.where(question_id: @question.id)
-        tagQuestion.delete_all
+        tag_question = TagQuestion.where(question_id: @question.id)
+        tag_question.delete_all
         answers = Answer.where(question_id: @question.id)
         answers.delete_all
         if @question.delete
@@ -85,17 +82,15 @@ module Api
 
         tags = question_params[:tags].split(',')
 
-        tagQuestion = TagQuestion.where(question_id: @question.id)
-        tagQuestion.delete_all
+        tag_question = TagQuestion.where(question_id: @question.id)
+        tag_question.delete_all
 
-        if !tags.blank?
-          tags.each do |tag|
-            name = tag.strip.downcase.capitalize
-            t = Tag.find_by(name: name)
-            t = Tag.create(name: name) unless t
-            TagQuestion.create(question_id: @question.id, tag_id: t.id)
-          end
-        end
+        tags.each do |tag|
+          name = tag.strip.downcase.capitalize
+          t = Tag.find_by(name: name)
+          t ||= Tag.create(name: name)
+          TagQuestion.create(question_id: @question.id, tag_id: t.id)
+        end unless tags.blank?
       end
 
       private
@@ -113,8 +108,7 @@ module Api
         user = nil
         user ||= User.find(doorkeeper_token[:resource_owner_id]) if doorkeeper_token
         render json: @question,
-               status: :unprocessable_entity,
-               serializer: ActiveModel::Serializer::ErrorSerializer unless @question.user.id == user.id
+               status: :unprocessable_entity, serializer: ActiveModel::Serializer::ErrorSerializer unless @question.user.id == user.id
       end
     end
   end

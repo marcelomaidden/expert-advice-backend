@@ -1,5 +1,6 @@
 module Api
   module V1
+    # UsersController is used to create, update users and, to create token with doorkeeper gem
     class UsersController < Api::V1::ApiController
       before_action :doorkeeper_authorize!, except: :create
 

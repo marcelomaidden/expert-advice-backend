@@ -1,7 +1,7 @@
 module Api
   module V1
     class AnswersController < ApplicationController
-      before_action :doorkeeper_authorize!, only: [:create, :update]
+      before_action :doorkeeper_authorize!, only: %i[create update]
 
       def index
         answers = Answer.order(:created_at)
