@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       get '/users/me', to: 'users#me'
       resources :users
       resources :questions
+      resources :answers
     end
   end
 end
