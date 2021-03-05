@@ -8,7 +8,11 @@ module Api
 
       def index
         if params[:page]
-          questions=Question.paginate(page: params[:page]).order(:created_at)
+          questions=Question.paginate(page: params[:page])
+          if params[:user]
+            questions=questions.where(user_id: params[:user])
+          end
+          questions=questions.order(:created_at)
         else
           questions=Question.order(:created_at)
         end

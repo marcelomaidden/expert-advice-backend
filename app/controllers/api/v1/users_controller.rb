@@ -28,6 +28,7 @@ module Api
 
       private
       def user_params
+        params[:data][:attributes].delete('questions')
         params.require(:data).require(:attributes).permit(:email, :password)
       end
     end
