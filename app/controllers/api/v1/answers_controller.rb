@@ -1,5 +1,6 @@
 module Api
   module V1
+    # AnswerController handles CRUD operations
     class AnswersController < ApplicationController
       before_action :doorkeeper_authorize!, only: %i[create update]
 

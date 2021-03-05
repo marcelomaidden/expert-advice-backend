@@ -37,21 +37,22 @@ module Api
         question.user_id = question_params[:user]
 
         if question.save
+          tags = question_params[:tags].split(',')
+
           render json: question
+          return if tags.blank?
+
+          tags.each do |tag|
+            name = tag.strip.downcase.capitalize
+            t = Tag.find_by(name: name)
+            t ||= Tag.create(name: name)
+            TagQuestion.create(question_id: question.id, tag_id: t.id)
+          end
         else
           render json: question,
                  status: :unprocessable_entity,
                  serializer: ActiveModel::Serializer::ErrorSerializer
         end
-
-        tags = question_params[:tags].split(',')
-
-        tags.each do |tag|
-          name = tag.strip.downcase.capitalize
-          t = Tag.find_by(name: name)
-          t ||= Tag.create(name: name)
-          TagQuestion.create(question_id: question.id, tag_id: t.id)
-        end unless tags.blank?
       end
 
       def destroy
@@ -74,23 +75,23 @@ module Api
 
         if @question.save
           render json: @question
+          tags = question_params[:tags].split(',')
+
+          tag_question = TagQuestion.where(question_id: @question.id)
+          tag_question.delete_all
+          return if tags.blank?
+
+          tags.each do |tag|
+            name = tag.strip.downcase.capitalize
+            t = Tag.find_by(name: name)
+            t ||= Tag.create(name: name)
+            TagQuestion.create(question_id: @question.id, tag_id: t.id)
+          end
         else
           render json: @question,
                  status: :unprocessable_entity,
                  serializer: ActiveModel::Serializer::ErrorSerializer
         end
-
-        tags = question_params[:tags].split(',')
-
-        tag_question = TagQuestion.where(question_id: @question.id)
-        tag_question.delete_all
-
-        tags.each do |tag|
-          name = tag.strip.downcase.capitalize
-          t = Tag.find_by(name: name)
-          t ||= Tag.create(name: name)
-          TagQuestion.create(question_id: @question.id, tag_id: t.id)
-        end unless tags.blank?
       end
 
       private
@@ -107,8 +108,10 @@ module Api
       def check_user
         user = nil
         user ||= User.find(doorkeeper_token[:resource_owner_id]) if doorkeeper_token
+        return if @question.user.id == user.id
+
         render json: @question,
-               status: :unprocessable_entity, serializer: ActiveModel::Serializer::ErrorSerializer unless @question.user.id == user.id
+               status: :unprocessable_entity, serializer: ActiveModel::Serializer::ErrorSerializer
       end
     end
   end
