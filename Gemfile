@@ -25,6 +25,7 @@ gem 'will_paginate'
 group :development, :test do
   gem 'pry'
   gem 'rspec-rails'
+  gem 'capybara', '~> 3.8'
   gem 'rubocop'
 end
 
