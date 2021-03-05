@@ -53,6 +53,8 @@ module Api
       def destroy
         tagQuestion = TagQuestion.where(question_id: @question.id)
         tagQuestion.delete_all
+        answers = Answer.where(question_id: @question.id)
+        answers.delete_all
         if @question.delete
           render json: @question
         else
@@ -91,7 +93,8 @@ module Api
 
       private
       def question_params
-        params.require(:data).require(:attributes).permit(:title, :description, :user, :tags, :answers, :pages)
+        params[:data][:attributes].delete('answers')
+        params.require(:data).require(:attributes).permit(:title, :description, :tags, :pages, :user)
       end
 
       def set_question
